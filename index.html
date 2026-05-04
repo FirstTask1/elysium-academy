@@ -59,6 +59,7 @@
       min-height: 100vh;
       overflow-x: hidden;
       position: relative;
+      background-attachment: fixed;
     }
 
     /* Animated Background Blobs */
@@ -269,6 +270,12 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 8px;
+    }
+
+    .required {
+      color: var(--danger);
+      font-weight: 700;
+      margin-left: 2px;
     }
 
     .form-group input {
@@ -1641,53 +1648,58 @@
         </form>
       </div>
 
-      <!-- Register Panel -->
+      <!-- Register Panel - NEW ORDER: Step 1 (Name) → Step 2 (Contact) → Step 3 (OTP) -->
       <div id="register-panel" class="auth-panel">
-        <form id="register-form" onsubmit="handleRegisterStep1(event)">
-          <!-- Step 1: Ism-Familiya -->
+        <form id="register-form">
+          
+          <!-- STEP 1: Ism & Familiya -->
           <div id="register-step-1">
             <div class="form-group">
-              <label>Ism</label>
+              <label>Ism <span class="required">*</span></label>
               <input type="text" id="register-firstname" placeholder="Alisher" required />
             </div>
             <div class="form-group">
-              <label>Familiya</label>
+              <label>Familiya <span class="required">*</span></label>
               <input type="text" id="register-lastname" placeholder="Qodirjonov" required />
             </div>
+            <button type="button" class="btn-primary" onclick="goToRegisterStep2()">Davom etish</button>
+            <div class="form-note">
+              Keyingi bosqichda tel yoki email kiritasiz
+            </div>
+          </div>
 
-            <!-- Smart Contact Input -->
+          <!-- STEP 2: Telefon yoki Email -->
+          <div id="register-step-2" style="display:none;">
+            <button type="button" class="btn-ghost" onclick="goBackToRegister()" style="margin-bottom: 20px; width: 100%;">
+              ← Orqaga
+            </button>
+            
             <div class="form-group contact-input-group">
-              <label>Tel yoki Email</label>
+              <label>Telefon yoki Email <span class="required">*</span></label>
               <input 
                 type="text" 
                 id="register-contact" 
                 class="contact-input"
-                placeholder="+998 (__) ___-__-__  yoki  email@example.com"
+                placeholder="+998 90 123 45 67  yoki  email@example.com"
                 oninput="detectContactType(this)"
                 required 
               />
               <span class="contact-input-type" id="contact-type">--</span>
             </div>
 
-            <!-- Telegram Auth Button -->
-            <button type="button" class="tg-btn" onclick="handleTelegramAuth()">
-              <div class="tg-icon">
-                <svg viewBox="0 0 24 24">
-                  <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7"></path>
-                </svg>
-              </div>
-              Telegram orqali
-            </button>
-
-            <button type="submit" class="btn-primary">Davom etish</button>
+            <button type="button" class="btn-primary" onclick="goToRegisterStep3()">Davom etish</button>
             <div class="form-note">
-              Kodni yuborish uchun quyidagi bosqichga o'ting
+              Tasdiqlash kodini olish uchun telefon yoki emailni kiriting
             </div>
           </div>
 
-          <!-- Step 2: OTP Verification -->
-          <div id="register-step-2" style="display:none;">
-            <div class="otp-label">Tasdiqlash kodini kiriting</div>
+          <!-- STEP 3: OTP Tasdiqlash -->
+          <div id="register-step-3" style="display:none;">
+            <button type="button" class="btn-ghost" onclick="goBackToContactStep()" style="margin-bottom: 20px; width: 100%;">
+              ← Orqaga
+            </button>
+            
+            <div class="otp-label">Tasdiqlash kodini kiriting <span class="required">*</span></div>
             
             <div class="otp-inputs">
               <input type="text" class="otp-input" id="otp-1" maxlength="1" oninput="moveToNextOTP(this, 'otp-2')" />
@@ -1710,23 +1722,18 @@
             <button type="submit" class="btn-primary" id="verify-btn" disabled>
               Tasdiqlash
             </button>
-
-            <button type="button" class="btn-ghost" onclick="goBackToRegister()" style="margin-top: 12px; width: 100%;">
-              Orqaga qaytish
-            </button>
           </div>
 
-          <!-- Step 3: Parol -->
-          <div id="register-step-3" style="display:none;">
-            <div class="form-group">
-              <label>Parol</label>
-              <input type="password" id="register-password" placeholder="••••••••" required />
-            </div>
-
-            <button type="submit" class="btn-primary">Ro'yxatdan o'tish</button>
-            <div class="form-note">
-              Parol minimal 6 ta belgidan iborat bo'lishi kerak
-            </div>
+          <!-- Telegram Auth Button (In Step 1) -->
+          <div id="tg-button-area">
+            <button type="button" class="tg-btn" onclick="handleTelegramAuth()">
+              <div class="tg-icon">
+                <svg viewBox="0 0 24 24">
+                  <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2s9 5 20 5a9.5 9.5 0 00-9-5.5c4.75 2.25 7-7 7-7"></path>
+                </svg>
+              </div>
+              Telegram orqali
+            </button>
           </div>
         </form>
       </div>
@@ -2115,29 +2122,57 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // REGISTER STEPS
+    // REGISTER STEPS NAVIGATION
     // ═══════════════════════════════════════════════════════════════════════════════════
-    function handleRegisterStep1(event) {
-      event.preventDefault();
+    function goToRegisterStep2() {
       const firstName = document.getElementById('register-firstname').value.trim();
       const lastName = document.getElementById('register-lastname').value.trim();
-      const contact = document.getElementById('register-contact').value.trim();
 
-      if (!firstName || !lastName || !contact) {
-        showToast('❌ Barcha maydonlarni to\'ldiring');
+      if (!firstName || !lastName) {
+        showToast('❌ Ism va Familiya to\'ldiring');
+        return;
+      }
+
+      document.getElementById('register-step-1').style.display = 'none';
+      document.getElementById('register-step-2').style.display = 'block';
+    }
+
+    function goToRegisterStep3() {
+      const contact = document.getElementById('register-contact').value.trim();
+      
+      if (!contact) {
+        showToast('❌ Telefon yoki Email to\'ldiring');
         return;
       }
 
       window.registerData = {
-        firstName,
-        lastName,
+        firstName: document.getElementById('register-firstname').value.trim(),
+        lastName: document.getElementById('register-lastname').value.trim(),
         contact,
         contactType: document.getElementById('contact-type').textContent
       };
 
-      document.getElementById('register-step-1').style.display = 'none';
-      document.getElementById('register-step-2').style.display = 'block';
+      // Clear OTP inputs
+      document.getElementById('otp-1').value = '';
+      document.getElementById('otp-2').value = '';
+      document.getElementById('otp-3').value = '';
+      document.getElementById('otp-4').value = '';
+      document.getElementById('verify-btn').disabled = true;
+
+      document.getElementById('register-step-2').style.display = 'none';
+      document.getElementById('register-step-3').style.display = 'block';
       startOTPTimer();
+    }
+
+    function goBackToRegister() {
+      document.getElementById('register-step-2').style.display = 'none';
+      document.getElementById('register-step-1').style.display = 'block';
+    }
+
+    function goBackToContactStep() {
+      document.getElementById('register-step-3').style.display = 'none';
+      document.getElementById('register-step-2').style.display = 'block';
+      if (otpTimer) clearInterval(otpTimer);
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -2176,29 +2211,39 @@
         otpSeconds--;
         document.getElementById('otp-seconds').textContent = otpSeconds;
         
+        const minutes = Math.floor(otpSeconds / 60);
+        const seconds = otpSeconds % 60;
+        resendBtn.textContent = `Qayta yuborish (${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')})`;
+
         if (otpSeconds <= 0) {
           clearInterval(otpTimer);
           resendBtn.disabled = false;
+          resendBtn.textContent = 'Qayta yuborish';
         }
       }, 1000);
     }
 
     function resendOTP() {
       showToast('📩 Kodi qayta yuborildi');
+      // Clear OTP inputs
+      document.getElementById('otp-1').value = '';
+      document.getElementById('otp-2').value = '';
+      document.getElementById('otp-3').value = '';
+      document.getElementById('otp-4').value = '';
+      document.getElementById('otp-1').focus();
+      document.getElementById('verify-btn').disabled = true;
+      
+      // Restart timer
+      if (otpTimer) clearInterval(otpTimer);
       startOTPTimer();
     }
 
-    function goBackToRegister() {
-      document.getElementById('register-step-2').style.display = 'none';
-      document.getElementById('register-step-1').style.display = 'block';
-      if (otpTimer) clearInterval(otpTimer);
-    }
-
     document.getElementById('register-form').addEventListener('submit', function(e) {
-      const step2 = document.getElementById('register-step-2');
+      e.preventDefault();
       
-      if (step2.style.display === 'block') {
-        e.preventDefault();
+      const step3 = document.getElementById('register-step-3');
+      
+      if (step3.style.display === 'block') {
         const otp = document.getElementById('otp-1').value + 
                    document.getElementById('otp-2').value + 
                    document.getElementById('otp-3').value + 
@@ -2206,19 +2251,11 @@
 
         if (otp === '1234') {
           showToast('✓ Kod tasdiqlandi');
-          document.getElementById('register-step-2').style.display = 'none';
-          document.getElementById('register-step-3').style.display = 'block';
+          if (otpTimer) clearInterval(otpTimer);
+          registerWithSupabase(window.registerData.contact, '123456', window.registerData);
         } else {
           showToast('❌ Kod noto\'g\'ri (Demo: 1234)');
         }
-      } else if (document.getElementById('register-step-3').style.display === 'block') {
-        e.preventDefault();
-        const password = document.getElementById('register-password').value;
-        if (password.length < 6) {
-          showToast('❌ Parol juda qisqa');
-          return;
-        }
-        registerWithSupabase(window.registerData.contact, password, window.registerData);
       }
     });
 
