@@ -1,739 +1,354 @@
-# ELYSIUM — UI/UX Architecture & Development Guide
-
-> A modern educational platform with minimalist, high-contrast aesthetics reminiscent of Notion, Linear, and contemporary productivity tools.
-
----
-
-## 1. Design System & Token Layer
-
-### 1.1 CSS Variables (`:root` Block)
-
-All styling derives from predefined tokens. **Never hardcode hex colors or dimensions.**
-
-```css
-:root {
-  /* Color Palette - Monochrome & Muted */
-  --white:   #ffffff;      /* Card, sidebar backgrounds */
-  --off:     #f7f7f5;      /* App background, hover states */
-  --light:   #efefed;      /* Subtle hover states */
-  --mid:     #c8c8c4;      /* Section labels, borders */
-  --muted:   #8c8c88;      /* Secondary text, inactive icons */
-  --ink:     #1a1a18;      /* Primary text, active states, buttons */
-  --accent:  #1a1a18;      /* Alias for --ink, always matches */
-  --line:    #e2e2de;      /* Borders, dividers, timeline tracks */
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELYSIUM — Ta'lim Platformasi</title>
   
-  /* Spatial System */
-  --sidebar: 260px;        /* Fixed sidebar width */
-  --hdr:     72px;         /* Header height */
-  --radius:  14px;         /* Default card border radius */
-  
-  /* Effects */
-  --shadow:  0 2px 24px rgba(0,0,0,.06);  /* Standard drop shadow */
-}
-```
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 
-### 1.2 Typography System
+  <style>
+    /* 1.1 CSS VARIABLES */
+    :root {
+      --white:   #ffffff;
+      --off:     #f7f7f5;
+      --light:   #efefed;
+      --mid:     #c8c8c4;
+      --muted:   #8c8c88;
+      --ink:     #1a1a18;
+      --accent:  #1a1a18;
+      --line:    #e2e2de;
+      --sidebar: 260px;
+      --hdr:     72px;
+      --radius:  14px;
+      --shadow:  0 2px 24px rgba(0,0,0,.06);
+    }
 
-**Dual-font architecture:**
+    /* GLOBAL RESETS */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'DM Sans', sans-serif; 
+      background: var(--off); 
+      color: var(--ink);
+      overflow-x: hidden;
+    }
 
-1. **Cormorant Garamond** (Serif, weights: 300, 400, 600)
-   - Exclusive use: Branding, logos, page titles, large statistics
-   - Conveys premium, academic feel
-   - Applied to: `.login-logo`, `.sidebar-brand-name`, `.page-title`
+    /* 1.2 TYPOGRAPHY */
+    .serif { font-family: 'Cormorant Garamond', serif; letter-spacing: 0.1em; }
+    .muted { color: var(--muted); }
 
-2. **DM Sans** (Sans-serif, weights: 300, 400, 500)
-   - Primary workhorse for all UI elements
-   - Default `body` font family
-   - Applied to: Buttons, inputs, body text, navigation
+    /* 2.1 AUTH LAYER */
+    #login-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--off);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    #login-screen.hide {
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+    }
 
-**Font weights usage:**
-- 300 (Light): Elegant headings, taglines
-- 400 (Regular): Body text, UI labels
-- 500 (Medium): Button text, section headers, emphasis
-- 600 (Semibold): Card titles, badges
+    .login-card {
+      background: var(--white);
+      width: 100%;
+      max-width: 420px;
+      padding: 40px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
 
-### 1.3 Color Usage Patterns
+    .login-logo { font-size: 38px; font-weight: 300; margin-bottom: 8px; }
+    .login-tagline { font-size: 12px; margin-bottom: 32px; letter-spacing: 0.1em; }
 
-| Token | Use Case | Examples |
-|-------|----------|----------|
-| `--white` | Card bgs, sidebar bg, hover targets | `.login-card`, `.sidebar`, `.modal` |
-| `--off` | App background, subtle hover | `body bg`, `.nav-item:hover` |
-| `--light` | Lighter hover states | `.tg-btn:hover`, secondary buttons |
-| `--ink` | Primary text, active states, CTA buttons | Text, `.nav-item.active`, `.btn-primary` |
-| `--muted` | Disabled text, labels, icons | Form labels, taglines, secondary info |
-| `--line` | Borders, dividers, strokes | Input borders, card borders, `hr` |
-| `--mid` | Section labels, de-emphasized text | Nav section labels |
+    .login-tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--line); }
+    .login-tab { 
+      flex: 1; padding: 12px; cursor: pointer; border: none; background: none; 
+      font-size: 14px; color: var(--muted); transition: 0.2s;
+    }
+    .login-tab.active { color: var(--ink); border-bottom: 2px solid var(--ink); font-weight: 500; }
 
----
+    .tab-panel { display: none; text-align: left; }
+    .tab-panel.active { display: block; }
 
-## 2. Core Layout Architecture
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-size: 11px; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.14em; color: var(--muted); }
+    .form-group input { 
+      width: 100%; padding: 13px 16px; border-radius: 10px; border: 1px solid var(--line); 
+      background: var(--off); font-family: inherit; transition: 0.2s;
+    }
+    .form-group input:focus { outline: none; border-color: var(--ink); background: var(--white); }
 
-### 2.1 Two-State Application Model
+    .btn-primary { 
+      width: 100%; padding: 14px; background: var(--ink); color: var(--white); 
+      border: none; border-radius: 10px; cursor: pointer; font-weight: 500; transition: 0.2s;
+    }
+    .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
 
-The app has **two mutually exclusive states** controlled by JavaScript:
+    /* 2.2 APP SHELL[cite: 2] */
+    #app { display: none; min-height: 100vh; }
+    #app.visible { display: flex; }
 
-#### State 1: Login Screen (`#login-screen`)
-- **Position**: Fixed overlay, `z-index: 9999`
-- **Visibility**: Visible on page load
-- **Hidden by**: `doLogin()` function (adds `.hide` class)
-- **Transition**: Opacity + vertical translate (500ms ease)
-- **Components**:
-  - `.login-card`: Centered authentication card (max-width 420px)
-  - `.login-tabs`: Tabbed interface (ID/Password vs Telegram)
-  - `.form-group`: Input fields with labels
-  - `.btn-primary`: Primary CTA
-  - `.tg-btn`: Secondary Telegram login button
+    /* SIDEBAR[cite: 2] */
+    .sidebar {
+      width: var(--sidebar);
+      background: var(--white);
+      border-right: 1px solid var(--line);
+      height: 100vh;
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+    }
 
-#### State 2: Main App (`#app`)
-- **Display**: `display: none` initially, then `display: flex` when visible
-- **Layout**: Flex column with fixed sidebar + main content area
-- **Structure**: Sidebar (fixed) | Main (flex: 1)
-- **Shown by**: `doLogin()` function (adds `.visible` class)
+    .sidebar-brand { padding: 32px 24px; }
+    .sidebar-brand-name { font-size: 22px; font-weight: 300; }
+    .sidebar-brand-sub { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
 
-### 2.2 Sidebar Layout
+    .sidebar-nav { flex: 1; padding: 0 12px; overflow-y: auto; }
+    .nav-section-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--mid); padding: 24px 12px 8px; }
+    
+    .nav-item { 
+      padding: 12px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 12px;
+      font-size: 14px; transition: 0.2s; color: var(--muted);
+    }
+    .nav-item:hover { background: var(--off); color: var(--ink); }
+    .nav-item.active { background: var(--ink); color: var(--white); }
 
-```html
-.sidebar (fixed, width: 260px)
-├── .sidebar-brand (header section)
-│   ├── .sidebar-brand-name (Cormorant Garamond)
-│   └── .sidebar-brand-sub (muted label)
-│
-├── .sidebar-nav (scrollable, flex: 1)
-│   ├── .nav-section-label (repeated sections)
-│   └── .nav-item × N (with icons, interactive)
-│
-└── .sidebar-footer (user profile section)
-    └── .user-chip (avatar + name)
-```
+    /* MAIN CONTENT[cite: 2] */
+    #main { flex: 1; margin-left: var(--sidebar); min-height: 100vh; }
+    .header { 
+      height: var(--hdr); padding: 0 40px; display: flex; align-items: center; justify-content: space-between;
+      background: var(--white); border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 90;
+    }
+    .content { padding: 40px; max-width: 1000px; margin: 0 auto; }
+    .page-title { font-size: 32px; font-weight: 400; margin-bottom: 4px; }
+    .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
 
-**Sidebar Behavior:**
-- Fixed width at 260px (desktop)
-- On mobile (<768px): Translates off-screen by default, toggles with hamburger
-- Active nav item: `.nav-item.active` (ink bg, white text)
-- Navigation events: `setNav(el)` - removes active from all, adds to clicked item, closes sidebar
+    /* 3.1 STATS GRID[cite: 2] */
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+    .stat-card { background: var(--white); padding: 24px; border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); }
+    .stat-label { font-size: 10px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+    .stat-value { font-size: 32px; font-weight: 400; }
 
-### 2.3 Main Content Area
+    /* 3.2 TIMELINE[cite: 2] */
+    .timeline { position: relative; padding-left: 32px; margin-top: 32px; }
+    .timeline::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 0; width: 1px; background: var(--line); }
+    
+    .tl-item { position: relative; margin-bottom: 32px; }
+    .tl-dot { 
+      position: absolute; left: -32px; top: 6px; width: 12px; height: 12px; 
+      border-radius: 50%; background: var(--white); border: 1px solid var(--line); z-index: 2;
+    }
+    .tl-item.past .tl-dot { background: var(--ink); border: none; }
+    .tl-item.present .tl-dot { border: 2px solid var(--ink); }
 
-```
-#main
-├── header (.header)
-│   ├── .header-left
-│   │   ├── .hamburger (mobile only)
-│   │   └── .breadcrumb
-│   └── .header-right
-│       ├── .icon-btn (notifications)
-│       └── .icon-btn (settings)
-│
-└── .content (scrollable, padding: 40px)
-    ├── .page-title (Cormorant Garamond)
-    ├── .page-sub (muted text)
-    ├── .stats-row (3-col CSS grid)
-    ├── .section-title × N
-    ├── .timeline (vertical stepper)
-    └── .submit-card (form component)
-```
+    .tl-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; transition: 0.2s; }
+    .tl-item.present .tl-card { border: 2px solid var(--ink); }
+    .tl-card-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
 
----
+    /* 3.3 SUBMISSION[cite: 2] */
+    .submit-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; margin-top: 40px; }
+    .submit-textarea { 
+      width: 100%; min-height: 120px; padding: 16px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--off); font-family: inherit; resize: vertical; margin-bottom: 16px;
+    }
+    .upload-zone { 
+      border: 2px dashed var(--line); padding: 32px; border-radius: 10px; text-align: center; 
+      cursor: pointer; transition: 0.2s; background: var(--off);
+    }
+    .upload-zone:hover { background: var(--light); border-color: var(--mid); }
 
-## 3. Key Component Specifications
+    /* TOAST[cite: 2] */
+    #toast {
+      position: fixed; bottom: 32px; right: 32px; background: var(--ink); color: var(--white);
+      padding: 12px 24px; border-radius: 8px; font-size: 14px; opacity: 0; transform: translateY(20px);
+      transition: 0.5s ease; pointer-events: none; z-index: 10000;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
 
-### 3.1 Stats Grid (`.stats-row`)
+    /* MOBILE RESPONSIVE[cite: 2] */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: transform 0.3s ease; }
+      .sidebar.open { transform: translateX(0); }
+      #main { margin-left: 0; }
+      .stats-row { grid-template-columns: 1fr; }
+      .header { padding: 0 20px; }
+      .content { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
 
-**HTML Structure:**
-```html
-<div class="stats-row">
-  <div class="stat-card">
-    <div class="stat-label">Label</div>
-    <div class="stat-value">123</div>
-    <div class="stat-delta">Secondary text</div>
-  </div>
-  <!-- × 3 cards -->
-</div>
-```
-
-**Styling:**
-- Display: `grid; grid-template-columns: repeat(3, 1fr); gap: 16px;`
-- `.stat-card`: White bg, border: 1px solid --line, border-radius: 14px, padding: 24px
-- `.stat-value`: Large, bold, ink color (Cormorant or DM Sans bold)
-- `.stat-label`: Muted, small, uppercase
-- `.stat-delta`: Muted, secondary info
-
-**Responsive:** 
-- Desktop: 3 columns
-- Mobile: 1 column (stacks)
-
-### 3.2 Timeline (`.timeline`)
-
-**State Classes:**
-- `.tl-item.past`: Completed module (gray dot, full progress bar)
-- `.tl-item.present`: Active module (ink border on card, partial progress)
-- `.tl-item.future`: Upcoming module (white/light dot, no progress bar)
-
-**HTML Structure:**
-```html
-<div class="timeline">
-  <div class="tl-item past/present/future">
-    <div class="tl-dot"></div>
-    <div class="tl-period">Date range</div>
-    <div class="tl-card">
-      <div class="tl-card-head">
-        <div class="tl-card-title">Module name</div>
-        <span class="tl-badge badge-done/now/soon">Status</span>
+  <!-- AUTH LAYER[cite: 2] -->
+  <div id="login-screen">
+    <div class="login-card">
+      <h1 class="login-logo serif">ELYSIUM</h1>
+      <p class="login-tagline muted">TA'LIM ARXITEKTURASI</p>
+      
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchTab('id')">ID/Parol</button>
+        <button class="login-tab" onclick="switchTab('tg')">Telegram</button>
       </div>
-      <div class="tl-card-desc">Description</div>
-      <div class="tl-progress">
-        <div class="tl-prog-label"><span>Progress</span><span>%</span></div>
-        <div class="tl-prog-bar"><div class="tl-prog-fill" style="width:N%"></div></div>
+
+      <div id="panel-id" class="tab-panel active">
+        <div class="form-group">
+          <label>Foydalanuvchi ID</label>
+          <input type="text" placeholder="Masalan: 400124">
+        </div>
+        <div class="form-group">
+          <label>Maxfiy Kalit</label>
+          <input type="password" placeholder="••••••••">
+        </div>
+        <button class="btn-primary" onclick="doLogin()">Kirish</button>
+      </div>
+
+      <div id="panel-tg" class="tab-panel">
+        <p class="muted" style="font-size: 13px; margin-bottom: 20px;">Telegram orqali tezkor kirish uchun quyidagi tugmani bosing.</p>
+        <button class="btn-primary" style="background: #24A1DE;">@ElysiumAuthBot</button>
       </div>
     </div>
   </div>
-</div>
-```
 
-**Styling Details:**
-- `.tl-dot`: Circle indicator (width/height: 12px or 16px)
-  - `.past`: Background ink, full opacity
-  - `.present`: Border: 2px ink, background white
-  - `.future`: Background white/light, border muted
-- `.tl-card`:
-  - `.past`: Normal styling
-  - `.present`: Border: 2px solid --ink (emphasizes active)
-  - `.future`: No visible border changes
-- `.tl-badge`:
-  - `.badge-done`: Muted bg, small font
-  - `.badge-now`: Ink bg, white text (highlighted)
-  - `.badge-soon`: Off bg, muted text
+  <!-- APP SHELL[cite: 2] -->
+  <div id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <h2 class="sidebar-brand-name serif">ELYSIUM</h2>
+        <span class="sidebar-brand-sub">Platforma v1.0</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Asosiy</div>
+        <div class="nav-item active" onclick="setNav(this)">
+          Dashboard
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          Kurslar
+        </div>
+        
+        <div class="nav-section-label">O'quvchi</div>
+        <div class="nav-item" onclick="setNav(this)">
+          Topshiriqlar
+        </div>
+        <div class="nav-item" onclick="setNav(this)">
+          Natijalar
+        </div>
+      </nav>
+    </aside>
 
-### 3.3 Submission Form (`.submit-card`)
+    <main id="main">
+      <header class="header">
+        <button class="hamburger" onclick="toggleSidebar()" style="background:none; border:none; font-size:20px; cursor:pointer;">☰</button>
+        <div class="user-chip" style="font-size: 13px; font-weight: 500;">Alisher F.</div>
+      </header>
 
-**HTML Structure:**
-```html
-<div class="submit-card">
-  <div class="submit-title">Form title</div>
-  
-  <textarea class="submit-textarea" placeholder="..."></textarea>
-  
-  <div class="link-row">
-    <input class="link-input" type="url" placeholder="https://..." />
-    <button class="btn-ghost">+ Add link</button>
+      <div class="content">
+        <h2 class="page-title serif">Xush kelibsiz</h2>
+        <p class="page-sub">Bugun: 4-May, 2026-yil</p>
+
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-label">Umumiy Ball</div>
+            <div class="stat-value serif">840</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Kurs Davomiyligi</div>
+            <div class="stat-value serif">12 <span style="font-size: 14px;">kun</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Yutuqlar</div>
+            <div class="stat-value serif">4</div>
+          </div>
+        </div>
+
+        <div class="section-title" style="font-weight: 500; margin-bottom: 24px;">O'quv Rejasi</div>
+        
+        <div class="timeline">
+          <div class="tl-item past">
+            <div class="tl-dot"></div>
+            <div class="tl-card">
+              <div class="tl-card-title">Modul 1: Kirish va Asoslar</div>
+              <p class="muted" style="font-size: 13px;">Tizim bilan tanishuv va dastlabki topshiriqlar.</p>
+            </div>
+          </div>
+          <div class="tl-item present">
+            <div class="tl-dot"></div>
+            <div class="tl-card">
+              <div class="tl-card-title">Modul 2: UI/UX Dizayn Strategiyasi</div>
+              <p class="muted" style="font-size: 13px;">Hozirgi bosqich. Topshiriq muddatiga 2 kun qoldi.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="submit-card">
+          <div style="font-weight: 500; margin-bottom: 16px;">Topshiriqni Yuborish</div>
+          <textarea class="submit-textarea" placeholder="Xabaringizni yozing..."></textarea>
+          <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+            <input type="file" id="file-input" hidden onchange="onFileChange(this)">
+            <p class="muted">Fayllarni bu yerga tashlang yoki tanlang</p>
+            <div id="file-list" style="margin-top: 10px; font-size: 12px; font-weight: 500;"></div>
+          </div>
+          <button class="btn-primary" style="margin-top: 24px;" onclick="showToast()">Topshirish</button>
+        </div>
+      </div>
+    </main>
   </div>
-  
-  <div class="upload-zone" id="upload-zone">
-    <input type="file" multiple onchange="onFileChange(this)" />
-    <div class="upload-icon"><!-- SVG --></div>
-    <div class="upload-text">Drag files here or <b>select</b></div>
-    <div class="upload-types">Supported formats...</div>
-  </div>
-  <div id="file-list"></div>
-  
-  <div class="submit-footer">
-    <button class="btn-ghost">Clear</button>
-    <button class="btn-send" onclick="showToast()">
-      Submit
-      <svg><!-- Arrow icon --></svg>
-    </button>
-  </div>
-</div>
-```
 
-**Component Styles:**
-- `.submit-textarea`: Full width, 100px min-height, border: 1px --line, padding: 16px, border-radius: 10px
-- `.link-row`: Flex, gap: 8px
-- `.link-input`: Flex: 1, similar styling to textarea
-- `.upload-zone`: Dashed border, centered flex, cursor: pointer on hover
-  - Background: Off color on hover
-  - Nested `input[type="file"]`: `display: none` (hidden, click forwarding via label)
-- `.btn-send`: Flex, gap: 6px, ink bg, white text
-
----
-
-## 4. Typography & Text Styles
-
-### 4.1 Predefined Text Classes
-
-| Class | Font | Size | Weight | Use Case |
-|-------|------|------|--------|----------|
-| `.login-logo` | Cormorant | 38px | 300 | Auth screen brand |
-| `.login-tagline` | DM Sans | 12px | 300 | Auth subtitle |
-| `.sidebar-brand-name` | Cormorant | 22px | 300 | Sidebar header |
-| `.page-title` | Cormorant | 32px | 400 | Page heading |
-| `.page-sub` | DM Sans | 13px | 400 | Date/context under title |
-| `.section-title` | DM Sans | 16px | 500 | Section headers |
-| `.stat-value` | (Cormorant) | 32px | 400 | Large numbers |
-| `.tl-card-title` | DM Sans | 15px | 500 | Module titles |
-| `.tl-card-desc` | DM Sans | 13px | 400 | Secondary text |
-
-### 4.2 Letter Spacing & Transform
-
-- Uppercase labels: `letter-spacing: .1em to .2em; text-transform: uppercase;`
-- Serif headings: `letter-spacing: .18em to .2em;`
-- Form labels: `letter-spacing: .14em;`
-
----
-
-## 5. Interactive Components
-
-### 5.1 Buttons
-
-**Primary Button (`.btn-primary`)**
-- Background: `--ink` (dark)
-- Color: `--white`
-- Padding: 14px (height ≈ 44px)
-- Border-radius: 10px
-- Width: 100% (fills container)
-- Hover: `opacity: .85; transform: translateY(-1px);`
-- Active: `transform: translateY(0);`
-
-**Ghost Button (`.btn-ghost`)**
-- Background: `--off` or transparent
-- Color: `--ink`
-- Border: 1px solid `--line` (optional)
-- Padding: 10px 16px
-- Hover: `background: --light;`
-
-**Send Button (`.btn-send`)**
-- Similar to primary, but with flex layout for icon
-- Gap: 6px between text and SVG
-
-### 5.2 Icon Buttons (`.icon-btn`)
-
-- Size: 40px × 40px
-- Border: none, background: transparent
-- SVG: 18px × 18px, stroke-width: 1.8
-- Color: `--muted` by default, `--ink` on hover
-- Transition: color 200ms, background 150ms
-
-### 5.3 Input Fields
-
-**Text & URL Inputs (`.form-group input`, `.link-input`)**
-- Padding: 13px 16px
-- Border: 1px solid `--line`
-- Border-radius: 10px
-- Background: `--off` (unfocused), `--white` (focused)
-- Font: DM Sans, 14px
-- Focus: `border-color: --ink;`
-- Transition: 200ms on border & background
-
-**Textarea (`.submit-textarea`)**
-- Same base styling as inputs
-- Min-height: 100px
-- Resize: vertical only (recommended)
-
----
-
-## 6. Mobile Responsiveness
-
-### 6.1 Breakpoint: 768px (tablet/mobile)
-
-**Sidebar Changes:**
-```css
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%); /* Hidden by default */
-    transition: transform 300ms ease;
-  }
-  .sidebar.open {
-    transform: translateX(0);
-    z-index: 1000; /* Appears above overlay */
-  }
-  
-  #overlay {
-    display: none; /* Hidden by default */
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.2);
-    z-index: 500;
-  }
-  #overlay.visible {
-    display: block;
-  }
-}
-```
-
-**Main Content Adjustments:**
-- Remove fixed sidebar width constraint
-- Padding: 20px (reduced from 40px)
-- Grid layouts: Collapse to single column
-
-**Navigation:**
-- Hamburger icon (`.hamburger`) visible
-- Click toggles sidebar and overlay
-- Clicking nav item closes sidebar automatically
-
-### 6.2 Responsive Grid Patterns
-
-**Stats Row:**
-```css
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Desktop: 3 cols */
-  gap: 16px;
-}
-
-@media (max-width: 768px) {
-  .stats-row {
-    grid-template-columns: 1fr; /* Mobile: 1 col */
-  }
-}
-```
-
-**Timeline:**
-- Remains vertical on all breakpoints
-- Card padding reduced on mobile (16px instead of 24px)
-
----
-
-## 7. Vanilla JavaScript API
-
-### 7.1 Core Functions
-
-**`switchTab(id)`**
-- **Purpose**: Toggle between login tabs ("id" or "tg")
-- **Behavior**: 
-  - Adds/removes `.active` class on tab buttons
-  - Shows/hides corresponding `.tab-panel` (by ID)
-- **Example**: `switchTab('id')` → activates ID/Password tab
-- **DOM Targets**: `.login-tab`, `#panel-id`, `#panel-tg`
-
-**`doLogin()`**
-- **Purpose**: Transition from login screen to main app
-- **Behavior**:
-  1. Adds `.hide` class to `#login-screen` (opacity: 0, pointer-events: none)
-  2. Waits 500ms (matches CSS transition duration)
-  3. Sets `display: none` on login screen
-  4. Adds `.visible` class to `#app` (sets display: flex)
-- **Trigger**: Login button onclick
-- **No parameters**
-
-**`toggleSidebar()`**
-- **Purpose**: Open/close sidebar on mobile
-- **Behavior**:
-  - Toggles `.open` class on `#sidebar`
-  - Toggles `.visible` class on `#overlay`
-- **Trigger**: Hamburger button click
-
-**`closeSidebar()`**
-- **Purpose**: Explicitly close sidebar
-- **Behavior**:
-  - Removes `.open` from `#sidebar`
-  - Removes `.visible` from `#overlay`
-- **Trigger**: On nav item click, overlay click
-
-**`setNav(el)`**
-- **Purpose**: Update active navigation state
-- **Behavior**:
-  1. Removes `.active` from all `.nav-item` elements
-  2. Adds `.active` to clicked element
-  3. Calls `closeSidebar()`
-- **Parameter**: `el` = DOM element (e.g., `this` from onclick)
-- **Trigger**: Nav item click
-
-**`onFileChange(input)`**
-- **Purpose**: Display selected files in UI
-- **Behavior**:
-  - Reads `input.files` (FileList)
-  - Maps filenames to display string with 📎 emoji
-  - Injects into `#file-list` div as `innerHTML`
-  - Clears if no files selected
-- **Parameter**: `input` = `<input type="file">` element
-- **Trigger**: File input `onchange` event
-- **Example**: `onchange="onFileChange(this)"`
-
-**`showToast()`**
-- **Purpose**: Show temporary success notification
-- **Behavior**:
-  1. Adds `.show` class to `#toast` element
-  2. Waits 3000ms (3 seconds)
-  3. Removes `.show` class (fades out)
-- **No parameters**
-- **Trigger**: "Submit" button click
-- **Customization**: Modify toast text in HTML (`#toast` content)
-
-### 7.2 Event Binding Patterns
-
-All event handlers are inline in HTML (no event listeners in JS):
-
-```html
-<!-- Tab switching -->
-<button class="login-tab" onclick="switchTab('id')">ID/Password</button>
-<button class="login-tab" onclick="switchTab('tg')">Telegram</button>
-
-<!-- Login trigger -->
-<button class="btn-primary" onclick="doLogin()">Kirish</button>
-
-<!-- Sidebar toggle -->
-<button class="hamburger" onclick="toggleSidebar()">☰</button>
-<div id="overlay" onclick="closeSidebar()"></div>
-
-<!-- Navigation -->
-<div class="nav-item" onclick="setNav(this)">Dashboard</div>
-
-<!-- File upload -->
-<input type="file" multiple onchange="onFileChange(this)" />
-
-<!-- Toast -->
-<button class="btn-send" onclick="showToast()">Submit</button>
-```
-
----
-
-## 8. Strict Development Rules for AI 🚨
-
-### 8.1 Class Naming Conventions
-
-- **Use semantic, flat names**: `tl-card`, `btn-primary`, `icon-btn`, `upload-zone`
-- **Avoid deep nesting**: Never use BEM-style multi-level (e.g., avoid `tl-card__header__title`)
-- **Prefix patterns**:
-  - `btn-*` for buttons
-  - `icon-*` for icon elements
-  - `tl-*` for timeline components
-  - `stat-*` for statistics
-  - `nav-*` for navigation
-
-### 8.2 No External Dependencies
-
-**Allowed:**
-- Google Fonts (Cormorant Garamond, DM Sans)
-- Inline SVGs (stroke-based icons)
-- Native HTML5 features (file input, form elements)
-- Vanilla JavaScript (ES6 OK, no transpilation needed)
-
-**Prohibited:**
-- React, Vue, Angular, Svelte, or any framework
-- Tailwind CSS, Bootstrap, or CSS frameworks
-- FontAwesome or external icon libraries
-- jQuery or other DOM libraries
-- Build tools or bundlers
-
-### 8.3 Inline SVG Icon Standards
-
-**Always use `stroke="currentColor"` or explicit color variables:**
-
-```html
-<!-- Notification icon -->
-<svg viewBox="0 0 24 24" stroke-width="1.8">
-  <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-  <path d="M13.73 21a2 2 0 01-3.46 0"/>
-</svg>
-
-<!-- Settings icon -->
-<svg viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--muted)">
-  <circle cx="12" cy="12" r="3"/>
-  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06..."/>
-</svg>
-```
-
-**Icon size conventions:**
-- Header/nav icons: 16px – 18px
-- Large interactive icons: 24px – 32px
-- Small badge icons: 12px – 14px
-- Set parent container size; SVG scales via `viewBox`
-
-### 8.4 Responsiveness Checklist
-
-For every new component, ensure:
-- [ ] Padding/margin adjusts for mobile (<768px)
-- [ ] Grid layouts collapse to 1 column
-- [ ] Text size is readable on mobile (min 13px body)
-- [ ] Touch targets are ≥44px (for buttons/icons)
-- [ ] Flexbox/grid wraps correctly with `flex-wrap` or `grid-auto-flow`
-- [ ] Sidebar integration works (doesn't break on toggle)
-- [ ] No horizontal scroll except for explicitly scrollable sections
-
-### 8.5 CSS Transition Standards
-
-- Button hover: `opacity .2s, transform .15s`
-- Color changes: `.2s` ease (smooth)
-- Sidebar/overlay: `.3s` ease (structural changes)
-- Navbar/header: `.2s` ease (appearance)
-- Toast/notifications: `.5s` ease (entry/exit)
-- Default easing: `ease` or `ease-out` for natural feel
-
-### 8.6 Accessibility Basics
-
-While not a full WCAG audit, include:
-- `aria-label` on icon buttons: `<button aria-label="Settings">`
-- Color contrast: Ensure ink/white meet WCAG AA
-- Form labels: `<label for="...">` linked to input IDs
-- Semantic HTML: Use `<button>`, `<input>`, `<nav>`, not `<div>` for functionality
-- Keyboard navigation: Avoid relying solely on hover states
-
----
-
-## 9. Common Customization Patterns
-
-### 9.1 Adding a New Section
-
-```html
-<!-- In .content area -->
-<div class="section-title">New Section</div>
-
-<div class="new-component">
-  <!-- Component markup -->
-</div>
-```
-
-**CSS:**
-```css
-.new-component {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 24px;
-  margin-bottom: 32px;
-}
-
-@media (max-width: 768px) {
-  .new-component {
-    padding: 16px;
-  }
-}
-```
-
-### 9.2 Adding a Badge/Label
-
-```html
-<span class="badge badge-success">Complete</span>
-```
-
-**CSS:**
-```css
-.badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: .06em;
-}
-
-.badge-success {
-  background: var(--off); /* Or custom color */
-  color: var(--ink);
-}
-
-.badge-warning {
-  background: var(--light);
-  color: var(--ink);
-}
-
-.badge-accent {
-  background: var(--ink);
-  color: var(--white);
-}
-```
-
-### 9.3 Modifying Colors
-
-**Never change hex values directly.** Instead, modify `:root` variables:
-
-```css
-:root {
-  --ink: #1a1a18;  /* Change here once */
-  /* All buttons, text, active states update automatically */
-}
-```
-
-### 9.4 Adding Animation/Hover Effects
-
-```css
-.interactive-element {
-  transition: background .2s, color .2s, transform .15s;
-}
-
-.interactive-element:hover {
-  background: var(--off);
-  color: var(--ink);
-  transform: translateY(-2px);
-}
-
-.interactive-element:active {
-  transform: translateY(0);
-}
-```
-
----
-
-## 10. File Structure & Organization
-
-```
-elysium.html (single file)
-├── <head>
-│   ├── Meta tags
-│   ├── Fonts (@import)
-│   └── <style> (all CSS)
-│       ├── :root (design tokens)
-│       ├── Global resets & base styles
-│       ├── Auth layer styles
-│       ├── App shell styles
-│       ├── Sidebar styles
-│       ├── Main content styles
-│       ├── Component styles (timeline, forms, etc.)
-│       ├── Mobile responsive media queries
-│       └── Utility/helper classes
-│
-├── <body>
-│   ├── #login-screen (auth overlay)
-│   ├── #app (main application shell)
-│   │   ├── .sidebar
-│   │   └── #main
-│   │       ├── header
-│   │       └── .content
-│   ├── #toast (notification)
-│   └── <script> (vanilla JS)
-│       ├── switchTab()
-│       ├── doLogin()
-│       ├── toggleSidebar()
-│       ├── closeSidebar()
-│       ├── setNav()
-│       ├── onFileChange()
-│       └── showToast()
-```
-
----
-
-## 11. Quick Reference: CSS Variables Usage
-
-```css
-/* Text Colors */
-color: var(--ink);      /* Primary, headings, active */
-color: var(--muted);    /* Secondary, labels, disabled */
-color: var(--white);    /* On dark backgrounds */
-
-/* Background Colors */
-background: var(--white);  /* Cards, main surfaces */
-background: var(--off);    /* App bg, hover states */
-background: var(--ink);    /* Dark buttons, active nav */
-
-/* Borders & Lines */
-border: 1px solid var(--line);  /* Input borders, dividers */
-border-bottom: 1px solid var(--line);  /* Section dividers */
-
-/* Spacing */
-width: var(--sidebar);  /* Sidebar width (260px) */
-border-radius: var(--radius);  /* Default roundness (14px) */
-border-radius: 10px;  /* Smaller elements (buttons, inputs) */
-
-/* Shadows */
-box-shadow: var(--shadow);  /* Standard elevation */
-```
-
----
-
-## 12. Debugging Checklist
-
-| Issue | Cause | Fix |
-|-------|-------|-----|
-| Layout broken on mobile | Missing media query | Add `@media (max-width: 768px)` |
-| Sidebar doesn't toggle | Missing `.open` class styling | Verify `translate` transform |
-| Colors look wrong | Hardcoded hex instead of var() | Replace with token |
-| Icons not showing | SVG `stroke="currentColor"` issues | Add explicit `stroke` color |
-| Fonts look off | Wrong font-family or weight | Verify Cormorant vs DM Sans |
-| Button not clickable | High z-index overlay blocking | Check overlay visibility |
-| Toast doesn't appear | Missing `.show` class transition | Verify CSS `.toast.show` styling |
-| Login doesn't hide | `doLogin()` not called | Check onclick handler |
-
----
-
-**Last Updated**: May 4, 2026  
-**Version**: 1.0 ELYSIUM Architecture v1.0
+  <div id="toast">Muvaffaqiyatli bajarildi!</div>
+
+  <!-- 7. VANILLA JS API[cite: 2] -->
+  <script>
+    function switchTab(id) {
+      document.querySelectorAll('.login-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      
+      event.target.classList.add('active');
+      document.getElementById('panel-' + id).classList.add('active');
+    }
+
+    function doLogin() {
+      const screen = document.getElementById('login-screen');
+      const app = document.getElementById('app');
+      
+      screen.classList.add('hide');
+      setTimeout(() => {
+        screen.style.display = 'none';
+        app.classList.add('visible');
+      }, 500);
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+    }
+
+    function setNav(el) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      el.classList.add('active');
+      if(window.innerWidth < 768) toggleSidebar();
+    }
+
+    function onFileChange(input) {
+      const list = document.getElementById('file-list');
+      if(input.files.length > 0) {
+        list.innerHTML = `📎 ${input.files[0].name}`;
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
