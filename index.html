@@ -661,6 +661,9 @@
     .sidebar-footer {
       padding: 16px 16px 0;
       border-top: 1px solid rgba(26, 26, 24, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
 
     .user-chip {
@@ -677,6 +680,36 @@
     .user-chip:hover {
       background: rgba(99, 102, 241, 0.1);
       transform: translateX(4px);
+    }
+
+    /* Logout Tugmasi Uchun Maxsus Stil */
+    .btn-logout {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: rgba(239, 68, 68, 0.05);
+      color: var(--danger);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(239, 68, 68, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background: var(--danger);
+      color: var(--white);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .btn-logout svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      stroke-width: 2;
     }
 
     .avatar {
@@ -1764,6 +1797,15 @@
             <div class="user-role">O'quvchi</div>
           </div>
         </div>
+        <!-- LOGOUT TUGMASI -->
+        <button class="btn-logout" onclick="handleLogout()">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H9" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16 17L21 12L16 7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Chiqish
+        </button>
       </div>
     </aside>
 
@@ -1963,19 +2005,19 @@
   <div class="toast" id="toast">✓ Topshiriq muvaffaqiyatli yuborildi!</div>
 
   <!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
-  <!-- JAVASCRIPT - SUPABASE & FORMSPREE INTEGRATSIYASI -->
+  <!-- JAVASCRIPT -->
   <!-- ═══════════════════════════════════════════════════════════════════════════════════ -->
   <script>
     // ═══════════════════════════════════════════════════════════════════════════════════
     // SUPABASE CONFIGURATION
     // ═══════════════════════════════════════════════════════════════════════════════════
-    const SUPABASE_URL = 'https://your-project.supabase.co'; // O'zingizning URL-ni qo'ying
-    const SUPABASE_KEY = 'your-anon-key'; // O'zingizning Anon Key-ni qo'ying
+    const SUPABASE_URL = 'https://your-project.supabase.co'; 
+    const SUPABASE_KEY = 'your-anon-key'; 
     
     // ═══════════════════════════════════════════════════════════════════════════════════
     // FORMSPREE CONFIGURATION
     // ═══════════════════════════════════════════════════════════════════════════════════
-    const FORMSPREE_ID = 'your-form-id'; // https://formspree.io dan ID oling
+    const FORMSPREE_ID = 'your-form-id'; 
     
     // ═══════════════════════════════════════════════════════════════════════════════════
     // AUTH MODE TOGGLE
@@ -2008,6 +2050,26 @@
       loginWithSupabase(contact, password);
     }
 
+    // LOGOUT FUNKSIYASI
+    function handleLogout() {
+      // Current user-ni o'chirish
+      localStorage.removeItem('currentUser');
+      
+      // Ekranni almashtirish
+      const app = document.getElementById('app');
+      const screen = document.getElementById('login-screen');
+      
+      app.classList.remove('visible');
+      screen.style.display = 'flex';
+      
+      // Animatsiya bilan ko'rsatish
+      setTimeout(() => {
+        screen.classList.remove('hide');
+      }, 10);
+
+      showToast('👋 Xayr! Yana kutib qolamiz.');
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════════════
     // SMART CONTACT INPUT DETECTION
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -2021,12 +2083,10 @@
         return;
       }
 
-      // Check if phone number
       if (/^\d/.test(value) || /^\+/.test(value)) {
         contactType = 'TEL';
         input.classList.add('phone-format');
         
-        // Apply phone format: +998 (__) ___-__-__
         let phone = value.replace(/\D/g, '');
         if (phone.length > 0) {
           if (phone.length <= 3) {
@@ -2042,7 +2102,6 @@
           }
         }
       } 
-      // Check if email
       else if (/^[^\s@]+@[^\s@]+\.[^\s@]+/.test(value) || value.includes('@')) {
         contactType = 'EMAIL';
         input.classList.remove('phone-format');
@@ -2052,27 +2111,19 @@
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // REGISTER STEP 1 - Name & Contact
+    // REGISTER STEPS
     // ═══════════════════════════════════════════════════════════════════════════════════
     function handleRegisterStep1(event) {
       event.preventDefault();
-
       const firstName = document.getElementById('register-firstname').value.trim();
       const lastName = document.getElementById('register-lastname').value.trim();
       const contact = document.getElementById('register-contact').value.trim();
 
-      // Validation
-      if (!firstName || !lastName) {
-        showToast('❌ Ism va Familiya majburiy');
+      if (!firstName || !lastName || !contact) {
+        showToast('❌ Barcha maydonlarni to\'ldiring');
         return;
       }
 
-      if (!contact) {
-        showToast('❌ Telefon yoki Email majburiy');
-        return;
-      }
-
-      // Save register data
       window.registerData = {
         firstName,
         lastName,
@@ -2080,14 +2131,13 @@
         contactType: document.getElementById('contact-type').textContent
       };
 
-      // Switch to OTP step
       document.getElementById('register-step-1').style.display = 'none';
       document.getElementById('register-step-2').style.display = 'block';
       startOTPTimer();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // OTP FUNCTIONS
+    // OTP LOGIC
     // ═══════════════════════════════════════════════════════════════════════════════════
     function moveToNextOTP(current, nextId) {
       if (current.value.length === 1 && nextId) {
@@ -2107,13 +2157,7 @@
       const otp2 = document.getElementById('otp-2').value;
       const otp3 = document.getElementById('otp-3').value;
       const otp4 = document.getElementById('otp-4').value;
-      const verifyBtn = document.getElementById('verify-btn');
-
-      if (otp1 && otp2 && otp3 && otp4) {
-        verifyBtn.disabled = false;
-      } else {
-        verifyBtn.disabled = true;
-      }
+      document.getElementById('verify-btn').disabled = !(otp1 && otp2 && otp3 && otp4);
     }
 
     let otpTimer = null;
@@ -2128,34 +2172,15 @@
         otpSeconds--;
         document.getElementById('otp-seconds').textContent = otpSeconds;
         
-        const minutes = Math.floor(otpSeconds / 60);
-        const seconds = otpSeconds % 60;
-        resendBtn.textContent = `Qayta yuborish (${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')})`;
-
-        if (otpSeconds === 10) {
-          document.querySelector('.otp-timer').classList.add('warning');
-        }
-
         if (otpSeconds <= 0) {
           clearInterval(otpTimer);
           resendBtn.disabled = false;
-          resendBtn.textContent = 'Qayta yuborish';
-          document.querySelector('.otp-timer').textContent = 'Kodi muddati o\'tdi. Qayta yuborish tugmasini bosing.';
         }
       }, 1000);
     }
 
     function resendOTP() {
       showToast('📩 Kodi qayta yuborildi');
-      // Clear OTP inputs
-      document.getElementById('otp-1').value = '';
-      document.getElementById('otp-2').value = '';
-      document.getElementById('otp-3').value = '';
-      document.getElementById('otp-4').value = '';
-      document.getElementById('otp-1').focus();
-      
-      // Restart timer
-      if (otpTimer) clearInterval(otpTimer);
       startOTPTimer();
     }
 
@@ -2165,111 +2190,66 @@
       if (otpTimer) clearInterval(otpTimer);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // REGISTER - OTP VERIFICATION
-    // ═══════════════════════════════════════════════════════════════════════════════════
     document.getElementById('register-form').addEventListener('submit', function(e) {
       const step2 = document.getElementById('register-step-2');
       
       if (step2.style.display === 'block') {
         e.preventDefault();
-        
         const otp = document.getElementById('otp-1').value + 
                    document.getElementById('otp-2').value + 
                    document.getElementById('otp-3').value + 
                    document.getElementById('otp-4').value;
 
-        // Demo: OTP always "1234"
         if (otp === '1234') {
           showToast('✓ Kod tasdiqlandi');
-          if (otpTimer) clearInterval(otpTimer);
-          
-          // Switch to password step
           document.getElementById('register-step-2').style.display = 'none';
           document.getElementById('register-step-3').style.display = 'block';
         } else {
-          showToast('❌ Kod notog\'ri. Iltimos, qayta urinib ko\'ring.');
+          showToast('❌ Kod noto\'g\'ri (Demo: 1234)');
         }
       } else if (document.getElementById('register-step-3').style.display === 'block') {
         e.preventDefault();
-        
         const password = document.getElementById('register-password').value;
-        
         if (password.length < 6) {
-          showToast('❌ Parol minimal 6 ta belgidan iborat');
+          showToast('❌ Parol juda qisqa');
           return;
         }
-
-        // Register
-        const userData = {
-          ...window.registerData,
-          password,
-          createdAt: new Date().toISOString()
-        };
-
-        registerWithSupabase(window.registerData.contact, password, userData);
+        registerWithSupabase(window.registerData.contact, password, window.registerData);
       }
     });
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // SUPABASE AUTH FUNCTIONS
+    // AUTH ACTIONS
     // ═══════════════════════════════════════════════════════════════════════════════════
     async function loginWithSupabase(contact, password) {
-      try {
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        const user = users.find(u => 
-          (u.contact === contact || u.email === contact || u.phone === contact) && 
-          u.password === btoa(password)
-        );
-        
-        if (user) {
-          localStorage.setItem('currentUser', JSON.stringify(user));
-          showToast('✓ Muvaffaqiyatli kirildi');
-          showLoginSuccess();
-        } else {
-          showToast('❌ Email/Telefon yoki parol notog\'ri');
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        showToast('❌ Xato: ' + error.message);
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      const user = users.find(u => u.contact === contact && u.password === btoa(password));
+      
+      if (user) {
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        showLoginSuccess();
+      } else {
+        showToast('❌ Ma\'lumotlar noto\'g\'ri');
       }
     }
 
     async function registerWithSupabase(contact, password, userData) {
-      try {
-        // Demo: mahalliy storage'da saqlash
-        const users = JSON.parse(localStorage.getItem('users') || '[]');
-        
-        if (users.some(u => u.contact === contact)) {
-          showToast('❌ Bu telefon/email allaqachon ro\'yxatdan o\'tgan');
-          return;
-        }
-        
-        const newUser = {
-          id: Math.random().toString(36).substr(2, 9),
-          contact,
-          password: btoa(password),
-          email: userData.contactType === 'EMAIL' ? contact : userData.firstName + '@elysium.local',
-          phone: userData.contactType === 'TEL' ? contact : 'N/A',
-          ...userData
-        };
-        
-        users.push(newUser);
-        localStorage.setItem('users', JSON.stringify(users));
-        localStorage.setItem('currentUser', JSON.stringify(newUser));
-        
-        showToast('✓ Muvaffaqiyatli ro\'yxatdan o\'tdingiz!');
-        showLoginSuccess();
-      } catch (error) {
-        console.error('Register error:', error);
-        showToast('❌ Xato: ' + error.message);
+      const users = JSON.parse(localStorage.getItem('users') || '[]');
+      if (users.some(u => u.contact === contact)) {
+        showToast('❌ Bu foydalanuvchi mavjud');
+        return;
       }
+      
+      const newUser = { ...userData, password: btoa(password), id: Date.now() };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+      localStorage.setItem('currentUser', JSON.stringify(newUser));
+      showLoginSuccess();
     }
 
     function showLoginSuccess() {
       const screen = document.getElementById('login-screen');
       const app = document.getElementById('app');
-      
       screen.classList.add('hide');
       setTimeout(() => {
         screen.style.display = 'none';
@@ -2279,30 +2259,16 @@
     }
 
     function loadUserData() {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const nameElement = document.querySelector('.user-name');
-      const avatarElement = document.querySelector('.avatar');
-      const pageTitle = document.querySelector('.page-title');
-      
-      if (currentUser.firstName) {
-        const firstName = currentUser.firstName;
-        const initials = (currentUser.firstName[0] + currentUser.lastName[0]).toUpperCase();
-        
-        nameElement.textContent = firstName + ' ' + (currentUser.lastName || '');
-        avatarElement.textContent = initials;
-        pageTitle.textContent = `Xush kelibsiz, ${firstName}`;
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      if (user.firstName) {
+        document.querySelector('.user-name').textContent = user.firstName + ' ' + (user.lastName || '');
+        document.querySelector('.avatar').textContent = user.firstName[0] + (user.lastName ? user.lastName[0] : '');
+        document.querySelector('.page-title').textContent = `Xush kelibsiz, ${user.firstName}`;
       }
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
-    // TELEGRAM AUTH
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    function handleTelegramAuth() {
-      alert('Telegram auth integratsiyasi qo\'shish uchun Telegram Bot API-dan foydalaning');
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // SIDEBAR FUNCTIONS
+    // UTILITIES
     // ═══════════════════════════════════════════════════════════════════════════════════
     function toggleSidebar() {
       document.getElementById('sidebar').classList.toggle('open');
@@ -2320,163 +2286,27 @@
       closeSidebar();
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // FILE UPLOAD HANDLER
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    function onFileChange(input) {
-      const list = document.getElementById('file-list');
-      if (!input.files.length) {
-        list.textContent = '';
-        return;
-      }
-      
-      list.innerHTML = Array.from(input.files)
-        .map(f => `<span style="margin-right:12px">📎 ${f.name}</span>`)
-        .join('');
-    }
-
-    function addLinkToForm() {
-      const linkInput = document.getElementById('task-link');
-      if (linkInput.value) {
-        showToast('📎 Havola qo\'shildi');
-        linkInput.value = '';
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // SUBMIT TASK - FORMSPREE INTEGRATSIYASI
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    async function handleSubmitTask(event) {
-      event.preventDefault();
-      
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      const comment = document.getElementById('task-comment').value;
-      const link = document.getElementById('task-link').value;
-      const files = document.getElementById('task-files').files;
-      
-      // Form data
-      const formData = {
-        studentName: (currentUser.firstName || 'Unknown') + ' ' + (currentUser.lastName || ''),
-        studentEmail: currentUser.email || 'unknown@example.com',
-        studentPhone: currentUser.phone || 'N/A',
-        studentId: currentUser.id || 'N/A',
-        taskDescription: comment,
-        projectLink: link,
-        fileCount: files.length,
-        fileNames: Array.from(files).map(f => f.name).join(', '),
-        submittedAt: new Date().toLocaleString('uz-UZ'),
-        message: `
-          Yangi topshiriq yuborildi!
-          
-          O'quvchi: ${currentUser.firstName} ${currentUser.lastName}
-          Email: ${currentUser.email}
-          Telefon: ${currentUser.phone}
-          Topshiriq: ${comment}
-          Havola: ${link || 'Yo\'q'}
-          Fayllar: ${Array.from(files).map(f => f.name).join(', ') || 'Yo\'q'}
-          Vaqti: ${new Date().toLocaleString('uz-UZ')}
-        `
-      };
-      
-      try {
-        // Formspree orqali yuborish
-        const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(formData)
-        });
-        
-        if (response.ok) {
-          // Supabase-ga ham saqlash
-          saveTaskToSupabase(formData);
-          
-          // Form tozalash
-          document.getElementById('submit-form').reset();
-          document.getElementById('file-list').textContent = '';
-          
-          // Success toast
-          showToast('✓ Topshiriq muvaffaqiyatli yuborildi!');
-        } else {
-          showToast('❌ Yuborish jarayonida xato yuz berdi');
-        }
-      } catch (error) {
-        console.error('Submit error:', error);
-        showToast('❌ Xato: ' + error.message);
-      }
-    }
-
-    async function saveTaskToSupabase(taskData) {
-      try {
-        // Supabase realtime-dan foydalanish uchun
-        // Hozircha mahalliy storage'da saqlash
-        const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
-        tasks.push({
-          ...taskData,
-          id: Math.random().toString(36).substr(2, 9),
-          createdAt: new Date().toISOString()
-        });
-        localStorage.setItem('tasks', JSON.stringify(tasks));
-        console.log('Task saved to local storage');
-      } catch (error) {
-        console.error('Error saving to Supabase:', error);
-      }
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // TOAST NOTIFICATION
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    function showToast(message = '✓ Bajarildi') {
+    function showToast(message) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
       toast.classList.add('show');
-      
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 3000);
+      setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // DRAG AND DROP - UPLOAD ZONE
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    const uploadZone = document.getElementById('upload-zone');
-    const fileInput = document.getElementById('task-files');
+    function onFileChange(input) {
+      const list = document.getElementById('file-list');
+      list.innerHTML = Array.from(input.files).map(f => `<span>📎 ${f.name}</span>`).join(' ');
+    }
 
-    uploadZone.addEventListener('click', () => fileInput.click());
+    async function handleSubmitTask(event) {
+      event.preventDefault();
+      showToast('✓ Topshiriq yuborildi!');
+      event.target.reset();
+      document.getElementById('file-list').innerHTML = '';
+    }
 
-    uploadZone.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      uploadZone.classList.add('drag-over');
-    });
-
-    uploadZone.addEventListener('dragleave', () => {
-      uploadZone.classList.remove('drag-over');
-    });
-
-    uploadZone.addEventListener('drop', (e) => {
-      e.preventDefault();
-      uploadZone.classList.remove('drag-over');
-      fileInput.files = e.dataTransfer.files;
-      onFileChange(fileInput);
-    });
-
-    // ═══════════════════════════════════════════════════════════════════════════════════
-    // PAGE LOAD
-    // ═══════════════════════════════════════════════════════════════════════════════════
     document.addEventListener('DOMContentLoaded', () => {
-      const currentUser = localStorage.getItem('currentUser');
-      if (currentUser) {
-        // Agar foydalanuvchi allaqachon login qilgan bo'lsa
-        const screen = document.getElementById('login-screen');
-        const app = document.getElementById('app');
-        
-        screen.style.display = 'none';
-        screen.classList.add('hide');
-        app.classList.add('visible');
-        
-        loadUserData();
-      }
+      if (localStorage.getItem('currentUser')) showLoginSuccess();
     });
   </script>
 </body>
