@@ -9,7 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    /* ─── TOKENS ─────────────────────────────────────────────── */
+    /* ─── TOKENS & RESET ────────────────────────────────────── */
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap');
 
     :root {
@@ -19,12 +19,10 @@
       --mid:     #c8c8c4;
       --muted:   #8c8c88;
       --ink:     #1a1a18;
-      --accent:  #1a1a18;
       --line:    #e2e2de;
       --sidebar: 260px;
       --hdr:     72px;
       --radius:  14px;
-      --shadow:  0 2px 24px rgba(0,0,0,.06);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -37,16 +35,12 @@
       overflow-x: hidden;
     }
 
-    /* ─── LOGIN SCREEN ───────────────────────────────────────── */
+    /* ─── LOGIN & REGISTER SCREEN ───────────────────────────── */
     #login-screen {
       position: fixed; inset: 0;
       background: var(--white);
       display: flex; align-items: center; justify-content: center;
       z-index: 9999;
-      transition: opacity .5s ease, transform .5s ease;
-    }
-    #login-screen.hide {
-      opacity: 0; pointer-events: none; transform: translateY(-20px);
     }
 
     .login-card {
@@ -62,26 +56,8 @@
     .login-logo {
       font-family: 'Cormorant Garamond', serif;
       font-size: 38px; font-weight: 300;
-      letter-spacing: .18em;
-      text-align: center;
-      margin-bottom: 8px;
+      letter-spacing: .18em; text-align: center; margin-bottom: 40px;
     }
-    .login-tagline {
-      text-align: center; font-size: 12px; font-weight: 300;
-      color: var(--muted); letter-spacing: .12em;
-      text-transform: uppercase; margin-bottom: 40px;
-    }
-
-    .login-tabs {
-      display: flex; border: 1px solid var(--line);
-      border-radius: 10px; overflow: hidden; margin-bottom: 32px;
-    }
-    .login-tab {
-      flex: 1; padding: 10px; background: none; border: none;
-      font-family: 'DM Sans', sans-serif; font-size: 13px;
-      font-weight: 500; color: var(--muted); cursor: pointer;
-    }
-    .login-tab.active { background: var(--ink); color: var(--white); }
 
     .form-group { margin-bottom: 18px; }
     .form-group label {
@@ -97,12 +73,17 @@
 
     .btn-primary {
       width: 100%; padding: 14px; background: var(--ink); color: var(--white);
-      border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 500; cursor: pointer;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 500;
+      cursor: pointer; margin-top: 10px;
     }
-    .btn-primary:disabled { opacity: 0.6; cursor: wait; }
+    .btn-outline {
+      width: 100%; padding: 12px; background: none; color: var(--muted);
+      border: 1px solid var(--line); border-radius: 10px; font-size: 13px;
+      cursor: pointer; margin-top: 12px; transition: .2s;
+    }
+    .btn-outline:hover { color: var(--ink); border-color: var(--ink); }
 
-    /* ─── APP SHELL ──────────────────────────────────────────── */
+    /* ─── APP SHELL ─────────────────────────────────────────── */
     #app { display: none; }
     #app.visible { display: flex; }
 
@@ -111,24 +92,22 @@
       background: var(--white); border-right: 1px solid var(--line);
       display: flex; flex-direction: column; z-index: 100;
     }
-
-    .sidebar-brand { padding: 28px 28px 24px; border-bottom: 1px solid var(--line); }
+    .sidebar-brand { padding: 28px; border-bottom: 1px solid var(--line); }
     .sidebar-brand-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; letter-spacing: .2em; }
+    
+    .nav-links { padding: 24px 16px; flex: 1; }
+    .nav-item { padding: 11px 12px; border-radius: 10px; font-size: 14px; margin-bottom: 4px; cursor: pointer; }
+    .nav-item.active { background: var(--ink); color: var(--white); }
+    .nav-item.logout { color: #e74c3c; margin-top: auto; border: 1px solid #f8d7da; text-align: center; }
 
     .main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
-
-    .header {
-      height: var(--hdr); background: var(--white); border-bottom: 1px solid var(--line);
-      display: flex; align-items: center; padding: 0 40px; position: sticky; top: 0; z-index: 50;
-    }
-    .header-logo { font-family: 'Cormorant Garamond', serif; font-size: 32px; letter-spacing: .3em; flex: 1; text-align: center; }
+    .header { height: var(--hdr); background: var(--white); border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 40px; position: sticky; top: 0; }
+    .header-logo { font-family: 'Cormorant Garamond', serif; font-size: 28px; letter-spacing: .3em; flex: 1; text-align: center; }
 
     .content { flex: 1; padding: 40px; max-width: 900px; width: 100%; margin: 0 auto; }
-
-    .page-title { font-family: 'Cormorant Garamond', serif; font-size: 28px; margin-bottom: 4px; }
-    .page-sub { font-size: 13px; color: var(--muted); margin-bottom: 40px; }
-
-    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 40px; }
+    .page-title { font-family: 'Cormorant Garamond', serif; font-size: 32px; margin-bottom: 8px; }
+    
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; margin-bottom: 40px; }
     .stat-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
     .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 40px; line-height: 1; }
 
@@ -136,12 +115,6 @@
     .submit-textarea { width: 100%; min-height: 120px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; font-family: inherit; resize: none; outline: none; }
     .link-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; outline: none; }
     .btn-send { padding: 12px 24px; background: var(--ink); color: var(--white); border: none; border-radius: 10px; font-weight: 500; cursor: pointer; }
-
-    .toast {
-      position: fixed; bottom: 32px; right: 32px; background: var(--ink); color: var(--white);
-      padding: 14px 20px; border-radius: 12px; font-size: 13px; opacity: 0; transition: .3s; z-index: 9000;
-    }
-    .toast.show { opacity: 1; }
 
     @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
   </style>
@@ -152,56 +125,55 @@
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">ELYSIUM</div>
-    <div class="login-tagline">O'quv platformasi</div>
-    <div class="login-tabs">
-      <button class="login-tab active">ID / Parol</button>
-      <button class="login-tab" onclick="alert('Tez kunda...')">Telegram</button>
+    
+    <div class="form-group">
+      <label>Foydalanuvchi ID</label>
+      <input type="text" id="user-id" placeholder="Masalan: ELY-2026" />
+    </div>
+    <div class="form-group">
+      <label>Parol</label>
+      <input type="password" id="user-pass" placeholder="••••••••" />
     </div>
     
-    <div class="tab-panel active">
-      <div class="form-group">
-        <label>Foydalanuvchi ID</label>
-        <input type="text" id="user-id" placeholder="ELY-2026" />
-      </div>
-      <div class="form-group">
-        <label>Parol</label>
-        <input type="password" id="user-pass" placeholder="••••••••" />
-      </div>
-      <button class="btn-primary" id="login-btn" onclick="doLogin()">Kirish</button>
-    </div>
+    <button class="btn-primary" id="login-btn" onclick="handleLogin()">Kirish</button>
+    <button class="btn-outline" id="register-btn" onclick="handleRegister()">Ro'yxatdan o'tish</button>
+    
+    <p id="auth-msg" style="font-size: 12px; text-align: center; margin-top: 15px; color: var(--muted);"></p>
   </div>
 </div>
 
-<!-- APP CONTENT -->
+<!-- MAIN APP -->
 <div id="app">
   <aside class="sidebar">
-    <div class="sidebar-brand">
-      <div class="sidebar-brand-name">ELYSIUM</div>
-    </div>
-    <nav style="padding: 24px 16px;">
-      <div style="background: var(--ink); color: var(--white); padding: 11px 12px; border-radius: 10px; font-size: 14px;">Asosiy</div>
+    <div class="sidebar-brand"><div class="sidebar-brand-name">ELYSIUM</div></div>
+    <nav class="nav-links">
+      <div class="nav-item active">Asosiy Dashboard</div>
+      <div class="nav-item">Kurslar</div>
+      <div class="nav-item">Vazifalar</div>
+      <div style="margin-top: 250px;"></div>
+      <div class="nav-item logout" onclick="handleLogout()">Chiqish</div>
     </nav>
   </aside>
 
   <main class="main">
     <header class="header"><div class="header-logo">ELYSIUM</div></header>
     <div class="content">
-      <div class="page-title" id="welcome-text">Xush kelibsiz</div>
-      <div class="page-sub" id="current-date">4-May, 2026</div>
+      <div class="page-title" id="display-name">Xush kelibsiz</div>
+      <p style="color: var(--muted); font-size: 14px;">Bugun: 4-May, 2026-yil</p>
 
       <div class="stats-row">
-        <div class="stat-card"><div class="stat-value">12</div><div style="font-size:11px; color:var(--muted)">Bajarilgan ✓</div></div>
+        <div class="stat-card"><div class="stat-value">12</div><div style="font-size:11px; color:var(--muted)">Bajarilgan</div></div>
         <div class="stat-card"><div class="stat-value">3</div><div style="font-size:11px; color:var(--muted)">Loyihalar</div></div>
-        <div class="stat-card"><div class="stat-value">840</div><div style="font-size:11px; color:var(--muted)">Umumiy Ball</div></div>
+        <div class="stat-card"><div class="stat-value">840</div><div style="font-size:11px; color:var(--muted)">Ball</div></div>
       </div>
 
       <div class="submit-card">
-        <div style="font-size: 15px; font-weight: 500; margin-bottom: 20px;">Topshiriq yuborish</div>
+        <h4 style="margin-bottom: 20px;">Topshiriq yuborish</h4>
         <form action="https://formspree.io/f/xwvylorz" method="POST">
-          <textarea class="submit-textarea" name="message" placeholder="Izoh qoldiring..." required></textarea>
-          <input class="link-input" type="url" name="github_link" placeholder="GitHub loyiha havolasi (https://...)" required />
+          <textarea class="submit-textarea" name="message" placeholder="Topshiriq haqida qisqacha..." required></textarea>
+          <input class="link-input" type="url" name="github" placeholder="GitHub havolasi (https://github.com/...)" required />
           <div style="display:flex; justify-content:flex-end;">
-            <button type="submit" class="btn-send">Topshirish</button>
+            <button type="submit" class="btn-send">Yuborish</button>
           </div>
         </form>
       </div>
@@ -209,62 +181,85 @@
   </main>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-  // SUPABASE INTEGRATSIYASI
+  // SUPABASE KONFIGURATSIYASI
   const SUPABASE_URL = 'https://bdxdrksfryspuialotxp.supabase.co';
   const SUPABASE_KEY = 'sb_publishable_3hE_8DuG-0xjYabNdH6qOA_d195zZB9'; 
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const _client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  async function doLogin() {
-    const idInput = document.getElementById('user-id').value;
-    const passInput = document.getElementById('user-pass').value;
+  // 1. SAHIFA YUKLANGANDA TEKSHIRISH (Eslab qolish qismi)
+  window.onload = () => {
+    const session = localStorage.getItem('elysium_session');
+    if (session) {
+      const user = JSON.parse(session);
+      showApp(user.student_id);
+    }
+  };
+
+  // 2. KIRISH FUNKSIYASI
+  async function handleLogin() {
+    const id = document.getElementById('user-id').value;
+    const pass = document.getElementById('user-pass').value;
     const btn = document.getElementById('login-btn');
 
-    if (!idInput || !passInput) {
-      alert("Iltimos, ID va parolni to'ldiring");
-      return;
-    }
+    if (!id || !pass) return alert("Barcha maydonlarni to'ldiring!");
 
     btn.disabled = true;
     btn.textContent = "Tekshirilmoqda...";
 
-    try {
-      // Students jadvalidan student_id va parolni solishtirish
-      const { data, error } = await _supabase
-        .from('students')
-        .select('*')
-        .eq('student_id', idInput)
-        .eq('password', passInput)
-        .single();
+    const { data, error } = await _client
+      .from('students')
+      .select('*')
+      .eq('student_id', id)
+      .eq('password', pass)
+      .single();
 
-      if (error || !data) {
-        throw new Error("ID yoki parol xato!");
-      }
-
-      // Muvaffaqiyatli login
-      document.getElementById('login-screen').classList.add('hide');
-      document.getElementById('welcome-text').textContent = `Xush kelibsiz, ${data.student_id}!`;
-      
-      setTimeout(() => {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app').classList.add('visible');
-        showToast("Tizimga muvaffaqiyatli kirdingiz");
-      }, 500);
-
-    } catch (err) {
-      alert(err.message);
+    if (data) {
+      localStorage.setItem('elysium_session', JSON.stringify(data));
+      showApp(data.student_id);
+    } else {
+      alert("ID yoki parol xato!");
       btn.disabled = false;
       btn.textContent = "Kirish";
     }
   }
 
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
+  // 3. RO'YXATDAN O'TISH FUNKSIYASI
+  async function handleRegister() {
+    const id = document.getElementById('user-id').value;
+    const pass = document.getElementById('user-pass').value;
+    const msg = document.getElementById('auth-msg');
+
+    if (id.length < 3 || pass.length < 4) {
+      return alert("ID kamida 3 ta, parol kamida 4 ta belgi bo'lsin!");
+    }
+
+    msg.textContent = "Ro'yxatga olinmoqda...";
+
+    const { error } = await _client
+      .from('students')
+      .insert([{ student_id: id, password: pass }]);
+
+    if (error) {
+      alert("Xatolik! Balki bu ID banddir?");
+      msg.textContent = "";
+    } else {
+      alert("Muvaffaqiyatli ro'yxatdan o'tdingiz! Endi 'Kirish' tugmasini bosing.");
+      msg.textContent = "Tayyor! Kirishingiz mumkin.";
+    }
+  }
+
+  // 4. ILOVANI KO'RSATISH
+  function showApp(name) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    document.getElementById('display-name').textContent = `Xush kelibsiz, ${name}!`;
+  }
+
+  // 5. CHIQISH (LOGOUT)
+  function handleLogout() {
+    localStorage.removeItem('elysium_session');
+    location.reload();
   }
 </script>
 
