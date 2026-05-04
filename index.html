@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ELYSIUM — O'quv Platformasi</title>
+  
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     /* ─── TOKENS ─────────────────────────────────────────────── */
     @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500&display=swap');
@@ -63,104 +67,53 @@
       margin-bottom: 8px;
     }
     .login-tagline {
-      text-align: center;
-      font-size: 12px; font-weight: 300;
-      color: var(--muted);
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      margin-bottom: 40px;
+      text-align: center; font-size: 12px; font-weight: 300;
+      color: var(--muted); letter-spacing: .12em;
+      text-transform: uppercase; margin-bottom: 40px;
     }
 
     .login-tabs {
-      display: flex;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      overflow: hidden;
-      margin-bottom: 32px;
+      display: flex; border: 1px solid var(--line);
+      border-radius: 10px; overflow: hidden; margin-bottom: 32px;
     }
     .login-tab {
-      flex: 1; padding: 10px;
-      background: none; border: none;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 13px; font-weight: 500;
-      color: var(--muted); cursor: pointer;
-      transition: background .2s, color .2s;
+      flex: 1; padding: 10px; background: none; border: none;
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      font-weight: 500; color: var(--muted); cursor: pointer;
     }
-    .login-tab.active {
-      background: var(--ink); color: var(--white);
-    }
-
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    .login-tab.active { background: var(--ink); color: var(--white); }
 
     .form-group { margin-bottom: 18px; }
     .form-group label {
-      display: block;
-      font-size: 11px; font-weight: 500;
+      display: block; font-size: 11px; font-weight: 500;
       letter-spacing: .1em; text-transform: uppercase;
       color: var(--muted); margin-bottom: 8px;
     }
     .form-group input {
-      width: 100%; padding: 13px 16px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px; color: var(--ink);
-      background: var(--off);
-      transition: border-color .2s;
-      outline: none;
+      width: 100%; padding: 13px 16px; border: 1px solid var(--line);
+      border-radius: 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; background: var(--off); outline: none;
     }
-    .form-group input:focus { border-color: var(--ink); background: var(--white); }
 
     .btn-primary {
-      width: 100%; padding: 14px;
-      background: var(--ink); color: var(--white);
-      border: none; border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 500;
-      letter-spacing: .04em;
-      cursor: pointer;
-      transition: opacity .2s, transform .15s;
+      width: 100%; padding: 14px; background: var(--ink); color: var(--white);
+      border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif;
+      font-size: 14px; font-weight: 500; cursor: pointer;
     }
-    .btn-primary:hover { opacity: .85; transform: translateY(-1px); }
-
-    .tg-btn {
-      width: 100%; padding: 13px;
-      background: var(--off); color: var(--ink);
-      border: 1px solid var(--line); border-radius: 10px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px; font-weight: 400;
-      display: flex; align-items: center; justify-content: center; gap: 10px;
-      cursor: pointer;
-      transition: background .2s, transform .15s;
-    }
-    .tg-btn:hover { background: var(--light); transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: 0.6; cursor: wait; }
 
     /* ─── APP SHELL ──────────────────────────────────────────── */
     #app { display: none; }
     #app.visible { display: flex; }
 
     .sidebar {
-      width: var(--sidebar);
-      height: 100vh; position: fixed; top: 0; left: 0;
-      background: var(--white);
-      border-right: 1px solid var(--line);
-      display: flex; flex-direction: column;
-      z-index: 100;
+      width: var(--sidebar); height: 100vh; position: fixed; top: 0; left: 0;
+      background: var(--white); border-right: 1px solid var(--line);
+      display: flex; flex-direction: column; z-index: 100;
     }
 
     .sidebar-brand { padding: 28px 28px 24px; border-bottom: 1px solid var(--line); }
     .sidebar-brand-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; letter-spacing: .2em; }
-    .sidebar-brand-sub { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
-
-    .sidebar-nav { flex: 1; padding: 24px 16px; }
-    .nav-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 11px 12px; border-radius: 10px;
-      font-size: 14px; color: var(--muted); cursor: pointer;
-      transition: background .15s, color .15s; margin-bottom: 2px;
-    }
-    .nav-item.active { background: var(--ink); color: var(--white); }
 
     .main { margin-left: var(--sidebar); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
 
@@ -179,20 +132,10 @@
     .stat-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; }
     .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 40px; line-height: 1; }
 
-    /* ─── FORMSPREE SUBMIT CARD ──────────────────────────────── */
-    .submit-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; margin-bottom: 48px; }
-    .submit-title { font-size: 15px; font-weight: 500; margin-bottom: 20px; }
-    .submit-textarea {
-      width: 100%; min-height: 120px; padding: 16px; border: 1px solid var(--line); border-radius: 10px;
-      font-family: 'DM Sans', sans-serif; font-size: 14px; background: var(--off); outline: none; margin-bottom: 12px;
-    }
-    .link-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; background: var(--off); outline: none; margin-bottom: 16px; }
-    
-    .btn-send {
-      padding: 12px 24px; background: var(--ink); color: var(--white); border: none; border-radius: 10px;
-      font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: opacity .2s;
-    }
-    .btn-send:hover { opacity: 0.85; }
+    .submit-card { background: var(--white); border: 1px solid var(--line); border-radius: var(--radius); padding: 32px; }
+    .submit-textarea { width: 100%; min-height: 120px; padding: 16px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 12px; font-family: inherit; resize: none; outline: none; }
+    .link-input { width: 100%; padding: 12px 16px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 16px; outline: none; }
+    .btn-send { padding: 12px 24px; background: var(--ink); color: var(--white); border: none; border-radius: 10px; font-weight: 500; cursor: pointer; }
 
     .toast {
       position: fixed; bottom: 32px; right: 32px; background: var(--ink); color: var(--white);
@@ -211,12 +154,11 @@
     <div class="login-logo">ELYSIUM</div>
     <div class="login-tagline">O'quv platformasi</div>
     <div class="login-tabs">
-      <button class="login-tab active" onclick="switchTab('id')">ID / Parol</button>
-      <button class="login-tab" onclick="switchTab('tg')">Telegram</button>
+      <button class="login-tab active">ID / Parol</button>
+      <button class="login-tab" onclick="alert('Tez kunda...')">Telegram</button>
     </div>
     
-    <!-- ID/Parol paneli -->
-    <div class="tab-panel active" id="panel-id">
+    <div class="tab-panel active">
       <div class="form-group">
         <label>Foydalanuvchi ID</label>
         <input type="text" id="user-id" placeholder="ELY-2026" />
@@ -225,15 +167,7 @@
         <label>Parol</label>
         <input type="password" id="user-pass" placeholder="••••••••" />
       </div>
-      <button class="btn-primary" onclick="doLogin()">Kirish</button>
-    </div>
-
-    <!-- Telegram paneli -->
-    <div class="tab-panel" id="panel-tg">
-        <div style="text-align:center; padding-bottom: 20px; color: var(--muted); font-size: 14px;">
-            Tez kunda: Telegram orqali kirish imkoniyati qo'shiladi.
-        </div>
-        <button class="tg-btn" onclick="alert('Hozircha ID orqali kiring.')">Telegram orqali kirish</button>
+      <button class="btn-primary" id="login-btn" onclick="doLogin()">Kirish</button>
     </div>
   </div>
 </div>
@@ -243,21 +177,17 @@
   <aside class="sidebar">
     <div class="sidebar-brand">
       <div class="sidebar-brand-name">ELYSIUM</div>
-      <div class="sidebar-brand-sub">O'quv platformasi</div>
     </div>
-    <nav class="sidebar-nav">
-      <div class="nav-item active">Asosiy</div>
-      <div class="nav-item">Topshiriqlar</div>
-      <div class="nav-item">Profil</div>
+    <nav style="padding: 24px 16px;">
+      <div style="background: var(--ink); color: var(--white); padding: 11px 12px; border-radius: 10px; font-size: 14px;">Asosiy</div>
     </nav>
   </aside>
 
   <main class="main">
     <header class="header"><div class="header-logo">ELYSIUM</div></header>
-    
     <div class="content">
-      <div class="page-title">Xush kelibsiz, Alisher</div>
-      <div class="page-sub">Bugun, 4-May 2026</div>
+      <div class="page-title" id="welcome-text">Xush kelibsiz</div>
+      <div class="page-sub" id="current-date">4-May, 2026</div>
 
       <div class="stats-row">
         <div class="stat-card"><div class="stat-value">12</div><div style="font-size:11px; color:var(--muted)">Bajarilgan ✓</div></div>
@@ -265,20 +195,13 @@
         <div class="stat-card"><div class="stat-value">840</div><div style="font-size:11px; color:var(--muted)">Umumiy Ball</div></div>
       </div>
 
-      <!-- FORMSPREE INTEGRATION -->
-      <div style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:20px; letter-spacing:.1em">Topshiriq yuborish</div>
       <div class="submit-card">
-        <div class="submit-title">Universal topshiriq formasi</div>
-        
+        <div style="font-size: 15px; font-weight: 500; margin-bottom: 20px;">Topshiriq yuborish</div>
         <form action="https://formspree.io/f/xwvylorz" method="POST">
-          <textarea class="submit-textarea" name="message" placeholder="Topshiriq yuzasidan izoh qoldiring..." required></textarea>
+          <textarea class="submit-textarea" name="message" placeholder="Izoh qoldiring..." required></textarea>
           <input class="link-input" type="url" name="github_link" placeholder="GitHub loyiha havolasi (https://...)" required />
-          
           <div style="display:flex; justify-content:flex-end;">
-            <button type="submit" class="btn-send">
-              Topshirish 
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
-            </button>
+            <button type="submit" class="btn-send">Topshirish</button>
           </div>
         </form>
       </div>
@@ -286,48 +209,60 @@
   </main>
 </div>
 
-<div class="toast" id="toast">✓ Ma'lumotlar yuborildi!</div>
+<div class="toast" id="toast"></div>
 
 <script>
-  /* Login Tab almashtirish */
-  function switchTab(id) {
-    document.getElementById('panel-id').classList.toggle('active', id === 'id');
-    document.getElementById('panel-tg').classList.toggle('active', id === 'tg');
-    document.querySelectorAll('.login-tab').forEach((t, i) => {
-        t.classList.toggle('active', (i === 0 && id === 'id') || (i === 1 && id === 'tg'));
-    });
-  }
+  // SUPABASE INTEGRATSIYASI
+  const SUPABASE_URL = 'https://bdxdrksfryspuialotxp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3hE_8DuG-0xjYabNdH6qOA_d195zZB9'; 
+  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  /* HAQIQIY LOGIN FUNKSIYASI */
-  function doLogin() {
-    const inputId = document.getElementById('user-id').value;
-    const inputPass = document.getElementById('user-pass').value;
+  async function doLogin() {
+    const idInput = document.getElementById('user-id').value;
+    const passInput = document.getElementById('user-pass').value;
+    const btn = document.getElementById('login-btn');
 
-    // MAXSUS LOGIN VA PAROL
-    const validID = "ELY-2026";
-    const validPass = "academy";
+    if (!idInput || !passInput) {
+      alert("Iltimos, ID va parolni to'ldiring");
+      return;
+    }
 
-    if (inputId === validID && inputPass === validPass) {
+    btn.disabled = true;
+    btn.textContent = "Tekshirilmoqda...";
+
+    try {
+      // Students jadvalidan student_id va parolni solishtirish
+      const { data, error } = await _supabase
+        .from('students')
+        .select('*')
+        .eq('student_id', idInput)
+        .eq('password', passInput)
+        .single();
+
+      if (error || !data) {
+        throw new Error("ID yoki parol xato!");
+      }
+
+      // Muvaffaqiyatli login
       document.getElementById('login-screen').classList.add('hide');
+      document.getElementById('welcome-text').textContent = `Xush kelibsiz, ${data.student_id}!`;
+      
       setTimeout(() => {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').classList.add('visible');
-        
-        // Kirish muvaffaqiyatli bo'lsa xabar ko'rsatish
-        const t = document.getElementById('toast');
-        t.textContent = "Xush kelibsiz, Alisher!";
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
+        showToast("Tizimga muvaffaqiyatli kirdingiz");
       }, 500);
-    } else {
-      alert("Xato: ID yoki Parol noto'g'ri!");
+
+    } catch (err) {
+      alert(err.message);
+      btn.disabled = false;
+      btn.textContent = "Kirish";
     }
   }
 
-  /* Formspree yuborilgandan so'ng xabar ko'rsatish */
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.has('thanks')) {
+  function showToast(msg) {
     const t = document.getElementById('toast');
+    t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 3000);
   }
