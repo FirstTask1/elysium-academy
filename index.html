@@ -64,7 +64,7 @@
     /* Animated Background Blobs */
     body::before {
       content: '';
-      position: fixed;
+      position: absolute;
       top: -50%;
       right: -10%;
       width: 600px;
@@ -79,7 +79,7 @@
 
     body::after {
       content: '';
-      position: fixed;
+      position: absolute;
       bottom: -30%;
       left: -5%;
       width: 500px;
@@ -514,11 +514,15 @@
       border-radius: 6px;
       letter-spacing: 0.05em;
       transition: all 0.3s ease;
+      pointer-events: none;
     }
+.contact-input {
+    padding-right: 90px;
+}
 
-    .contact-input {
-      padding-right: 90px;
-    }
+.contact-input:invalid {
+    border-color: #ef4444 !important;
+}
 
     .phone-format {
       font-family: 'Courier New', monospace;
